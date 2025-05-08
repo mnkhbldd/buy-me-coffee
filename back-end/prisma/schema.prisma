@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  password String
+  username String
+  receivedDonation Donation[] @relation()
+  profile Profile?
+  bankCards BankCard[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Donation {
+  id Int @id @default(autoincrement())
+  amount Int
+  specialMessage String
+  socialURLOrBuyMeACoffee String
+  donorId Int
+  recipientId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BankCard {
+  id Int @id @default(autoincrement())
+  country String
+  firstName String 
+  lastName String
+  cardNumber String
+  expiryDate Date
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id Int @id @default(autoincrement())
+  name String
+  about String 
+  avatarImage String 
+  socialMediaURL String 
+  backgroundImage String 
+  successMessage String 
+
+  userId Int @unique
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
