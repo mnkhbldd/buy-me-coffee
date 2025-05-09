@@ -1,10 +1,10 @@
-import { UsernameSection } from "../components/UsernameSection";
+import { SignUpPage } from "../components/SignUpPage";
 
 export default function SignUp() {
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h1 className="text-6xl font-bold">
-        <UsernameSection />
+        <SignUpPage />
       </h1>
     </div>
   );

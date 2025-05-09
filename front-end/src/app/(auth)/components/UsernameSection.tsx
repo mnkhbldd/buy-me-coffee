@@ -1,12 +1,21 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { FormCustomInput } from "./FormInput";
 import { useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { CircleCheck } from "lucide";
+import { CircleCheckIcon } from "lucide-react";
 
-export const UsernameSection = () => {
-  const usernameInputRef = useRef(null);
-  const [username, setUsername] = useState("");
+interface UsernameSectionProps {
+  usernameRef: React.RefObject<HTMLInputElement | null>;
+  error: { username?: string };
+  onClick: () => void;
+}
 
+export const UsernameSection = ({
+  usernameRef,
+  error,
+  onClick,
+}: UsernameSectionProps) => {
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-[6px] p-[24px]">
@@ -16,16 +25,35 @@ export const UsernameSection = () => {
         </p>
       </div>
       <div className="px-[24px]">
-        <FormCustomInput
-          usernameInputRef={usernameInputRef}
-          label="Username"
-          type="text"
-          placeholder="Enter username here"
-          error="The username is already taken"
-        />
+        <div className="flex flex-col gap-2">
+          <p className="text-[14px] font-medium">Username</p>
+          <Input
+            ref={usernameRef}
+            className={`w-[335px] placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal  ${
+              error.username ? "border-[#EF4444]" : ""
+            }`}
+            placeholder="Enter username here"
+            type="email"
+          />
+          {error.username && (
+            <div className="flex gap-1 items-center">
+              <CircleCheckIcon className="size-[14px] text-[#EF4444]" />
+              <p className="text-[12px] font-normal text-[#EF4444]">
+                {error.username}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
       <div className="w-full px-[24px]">
-        <Button className="w-full">Continue</Button>
+        <Button
+          onClick={onClick}
+          className={`w-full !hover:none hover:bg-* hover:cursor-pointer ${
+            error ? "bg-gray-300 text-white" : "bg-black text-white"
+          }`}
+        >
+          Continue
+        </Button>
       </div>
     </div>
   );
