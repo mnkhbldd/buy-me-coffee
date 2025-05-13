@@ -1,41 +1,222 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CameraIcon } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-export const CreateProfile = () => {
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
+
+interface Types {
+  handleNextPage: () => void;
+}
+
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Please enter name",
+  }),
+  bio: z
+    .string()
+    .min(10, {
+      message: "Bio must be at least 10 characters.",
+    })
+    .max(160, {
+      message: "Bio must not be longer than 30 characters.",
+    }),
+  socialMediaURL: z.string().url({ message: "Please enter URL Link" }).min(10, {
+    message: "Please enter link",
+  }),
+  avatarImage: z
+    .union([
+      z.string().min(1, { message: "Please upload your image" }),
+      z.instanceof(File),
+    ])
+    .refine(
+      (val) => {
+        if (typeof val === "string") return val.length > 0;
+        if (val instanceof File) return val.size > 0;
+        return false;
+      },
+      { message: "Please upload your image" }
+    ),
+});
+
+export const CreateProfile = ({ handleNextPage }: Types) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      bio: "",
+      socialMediaURL: "",
+      avatarImage: "",
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    handleNextPage();
+    console.log(values);
+  }
+
   return (
     <div className="flex  flex-col gap-6 w-[510px]">
       <p className="text-[24px] font-semibold">Complete your profile</p>
       <div className="flex flex-col gap-3">
-        <p className="text-[14px] font-medium">Add photo</p>
+        {/* <p className="text-[14px] font-medium">Add photo</p>
         <div className="w-[160px] h-[160px] rounded-full border-dashed border flex items-center justify-center">
           <CameraIcon className="text-gray-400" />
-        </div>
+        </div> */}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-2/3 space-y-6"
+          >
+            <FormField
+              control={form.control}
+              name="avatarImage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Add Photo</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <div className="relative w-[160px] h-[160px]">
+                        <img
+                          src={
+                            typeof field.value === "string"
+                              ? field.value
+                              : URL.createObjectURL(field.value)
+                          }
+                          alt="Avatar"
+                          className="w-full h-full object-cover rounded-full border"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="absolute top-0 right-0 size-[160px] rounded-full bg-transparent"
+                          onClick={() =>
+                            form.setValue("avatarImage", "", {
+                              shouldValidate: true,
+                            })
+                          }
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative w-full h-full">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          className={`w-[160px] h-[160px] border-dashed rounded-full text-transparent cursor-pointer ${
+                            form.formState.errors.avatarImage
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              form.setValue("avatarImage", file, {
+                                shouldValidate: true,
+                              });
+                            } else {
+                              form.setValue("avatarImage", "", {
+                                shouldValidate: true,
+                              });
+                            }
+                          }}
+                        />
+                        <CameraIcon className="text-gray-400 absolute left-1/5 top-[45%]" />
+                      </div>
+                    )}
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
       </div>
       <div className="flex flex-col gap-3">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your name here" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
         <div className="flex flex-col gap-2">
-          <p className="text-[14px] font-medium">Name</p>
-          <Input
-            className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-            placeholder="Enter your name here"
-          />
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-2/3 space-y-6"
+            >
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bio</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell us a little bit about yourself"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-[14px] font-medium">About</p>
-          <textarea
-            className="border rounded-[6px] w-full h-[131px] text-[14px] placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal p-2 resize-none align-top"
-            placeholder="Write about yourself here"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="text-[14px] font-medium">Social media URL</p>
-          <Input
-            className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-            placeholder="https://"
-          />
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-2/3 space-y-6"
+            >
+              <FormField
+                control={form.control}
+                name="socialMediaURL"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Social Media URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-[246px] self-end">
+                Continue
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
-      <Button className="w-[246px] self-end">Continue</Button>
     </div>
   );
 };

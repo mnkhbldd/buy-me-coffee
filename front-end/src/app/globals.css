@@ -121,3 +121,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+input[type="file"]::-webkit-file-upload-button {
+  visibility: hidden;
+}

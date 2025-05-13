@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CameraIcon } from "lucide-react";
@@ -10,8 +11,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const FormSchema = z.object({
+  country: z.string().min(1, {
+    message: "Please select an country.",
+  }),
+  firstName: z.string().min(5, {
+    message: "Please enter the name",
+  }),
+  lastName: z.string().min(2, {
+    message: "Please enter the lastname",
+  }),
+  cardNumber: z
+    .string()
+    .min(16, {
+      message: "Please enter the card number",
+    })
+    .max(16, {
+      message: "Its not card number",
+    }),
+  month: z.string().min(0, {
+    message: "Please select month",
+  }),
+  year: z.string().min(0, {
+    message: "Please select year",
+  }),
+  cvc: z
+    .string()
+    .min(3, {
+      message: "Please write CVC code",
+    })
+    .max(3, {
+      message: "Its not cvc number",
+    }),
+});
+
+function onSubmit(values: z.infer<typeof FormSchema>) {
+  const expiryDate = `${values.month}/${values.year}`;
+  console.log(values);
+}
 
 export const CreateCard = () => {
+  const [countryNames, setCountryNames] = useState();
+
+  const fetchCountryNames = async () => {
+    try {
+      const res = await axios.get(
+        "https://restcountries.com/v3.1/all?fields=name"
+      );
+      setCountryNames(res.data);
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    fetchCountryNames();
+  }, []);
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+  });
+
   return (
     <div className="flex  flex-col gap-6 w-[510px]">
       <div className="flex flex-col gap-[6px]">
@@ -25,112 +100,213 @@ export const CreateCard = () => {
 
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <p className="text-[14px] font-medium">Name</p>
-          <Select>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="apple">Apple</SelectItem>
-                <SelectItem value="banana">Banana</SelectItem>
-                <SelectItem value="blueberry">Blueberry</SelectItem>
-                <SelectItem value="grapes">Grapes</SelectItem>
-                <SelectItem value="pineapple">Pineapple</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6 w-full"
+            >
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select country</FormLabel>
+                    <Select onValueChange={field.onChange}>
+                      <FormControl className="w-full">
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(countryNames ?? []).map(
+                          (
+                            country: { name: { common: string } },
+                            index: number
+                          ) => (
+                            <SelectItem key={index} value={country.name.common}>
+                              {country.name.common}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
         </div>
         <div className="flex w-full justify-between gap-3">
           <div className=" w-full flex flex-col gap-2">
-            <p className="text-[14px] font-medium">First name</p>
-            <Input
-              className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-              placeholder="Enter your name here"
-            />
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter first name" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <p className="text-[14px] font-medium">Last name</p>
-            <Input
-              className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-              placeholder="Enter your name here"
-            />
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter last name" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
           </div>
         </div>
         <div className="flex flex-col gap-2 w-full">
-          <p className="text-[14px] font-medium">Enter card number</p>
-          <Input
-            className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-            placeholder="XXXX-XXXX-XXXX-XXXX"
-          />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="cardNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Enter card number </FormLabel>
+                    <FormControl>
+                      <Input placeholder="XXXX-XXXX-XXXX-XXXX" {...field} />
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
         </div>
         <div className="flex gap-4">
           <div className="flex flex-col gap-2 w-full">
-            <p className="text-[14px] font-medium">Expires</p>
-            <Select>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Month" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {[
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                  ].map((month, index) => (
-                    <SelectItem key={index} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6 w-full"
+              >
+                <FormField
+                  control={form.control}
+                  name="month"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Month</FormLabel>
+                      <Select onValueChange={field.onChange}>
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="month" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                            (month, index) => (
+                              <SelectItem key={index} value={month.toString()}>
+                                {month}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <p className="text-[14px] font-medium">Year</p>
-            <Select>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {[
-                    "2023",
-                    "2024",
-                    "2025",
-                    "2026",
-                    "2027",
-                    "2028",
-                    "2029",
-                    "2030",
-                  ].map((year, index) => (
-                    <SelectItem key={index} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6 w-full"
+              >
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Year</FormLabel>
+                      <Select onValueChange={field.onChange}>
+                        <FormControl className="w-full">
+                          <SelectTrigger>
+                            <SelectValue placeholder="month" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                            (month, index) => (
+                              <SelectItem key={index} value={month.toString()}>
+                                {month}
+                              </SelectItem>
+                            )
+                          )}
+                        </SelectContent>
+                      </Select>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </form>
+            </Form>
           </div>
           <div className="flex flex-col gap-2 w-full">
-            <p className="text-[14px] font-medium">CVC</p>
-            <Input
-              className="w-full placeholder:text-[14px] placeholder:text-[#71717A] placeholder:font-normal font-normal "
-              placeholder="CVC"
-            />
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="cvc"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CVC</FormLabel>
+                      <FormControl>
+                        <Input placeholder="CVC" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-[246px] self-end">
+                  Continue
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </div>
-      <Button className="w-[246px] self-end">Continue</Button>
     </div>
   );
 };
