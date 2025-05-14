@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { uploadImage } from "@/app/utils/image-upload";
 
 interface Types {
   handleNextPage: () => void;
@@ -61,11 +63,27 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
       avatarImage: "",
     },
   });
+  const [file, setFile] = useState<File>();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    handleNextPage();
-    console.log(values);
-  }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!file) {
+      console.error("No image was uploaded");
+      return;
+    }
+
+    try {
+      const imageUrl = await uploadImage(file);
+      if (!imageUrl) {
+        console.error("No image URL was returned");
+        return;
+      }
+
+      console.log("Image URL:", imageUrl);
+      // handleNextPage();
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
 
   return (
     <div className="flex  flex-col gap-6 w-[510px]">
@@ -122,15 +140,31 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
                               : ""
                           }`}
                           onChange={(e) => {
-                            const file = e.target.files?.[0];
+                            const target = e.target as HTMLInputElement;
+                            const file = target.files?.[0];
                             if (file) {
-                              form.setValue("avatarImage", file, {
-                                shouldValidate: true,
-                              });
+                              try {
+                                form.setValue("avatarImage", file, {
+                                  shouldValidate: true,
+                                });
+                                setFile(file);
+                              } catch (error) {
+                                console.error(
+                                  "Error setting avatarImage in form",
+                                  error
+                                );
+                              }
                             } else {
-                              form.setValue("avatarImage", "", {
-                                shouldValidate: true,
-                              });
+                              try {
+                                form.setValue("avatarImage", "", {
+                                  shouldValidate: true,
+                                });
+                              } catch (error) {
+                                console.error(
+                                  "Error setting avatarImage to empty string in form",
+                                  error
+                                );
+                              }
                             }
                           }}
                         />

@@ -5,7 +5,7 @@ import { CreateCard } from "./CreateCard";
 import { CreateProfile } from "./CreateProfile";
 
 export const CreateProfileAndCard = () => {
-  const [pageCount, setPageCount] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
 
   const handleNextPage = () => {
     if (pageCount < 2) {
