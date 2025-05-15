@@ -79,7 +79,7 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
       }
 
       console.log("Image URL:", imageUrl);
-      // handleNextPage();
+      handleNextPage();
     } catch (error) {
       console.error("Error uploading image:", error);
     }

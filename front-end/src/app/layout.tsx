@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthContext } from "./contexts/AuthContext";
 import { Dispatch, SetStateAction, useState } from "react";
+import { NavBar } from "@/components/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthContext.Provider value={{ user, setUser }}>
+          {/* <NavBar /> */}
           {children}
         </AuthContext.Provider>
       </body>
