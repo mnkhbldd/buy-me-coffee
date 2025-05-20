@@ -80,7 +80,8 @@ export const SignUpPage = () => {
             email: emailValue,
             password: passwordValue,
             username: username,
-          }
+          },
+          { withCredentials: true }
         );
 
         setError({});

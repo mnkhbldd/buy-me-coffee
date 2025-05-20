@@ -1,11 +1,11 @@
 import React, { Dispatch, SetStateAction } from "react";
 
-interface AuthContextValue {
+interface UserContextValue {
   userId: string;
   setUserId: (newUserId: string) => void;
 }
 
-export const AuthContext = React.createContext<AuthContextValue>({
+export const UserContext = React.createContext<UserContextValue>({
   userId: "",
   setUserId: () => {},
 });

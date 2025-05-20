@@ -1,9 +1,16 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
-import bcrypt from "bcrypt";
 
 export const createProfile = async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  const user = (req as any).user;
+
+  if (!user || !user.id) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid user token" });
+  }
+
+  const userId = Number(user.id);
   const {
     avatarImage,
     name,
@@ -14,22 +21,31 @@ export const createProfile = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
-    const user = await prisma.user.findFirst({
-      where: { id: Number(userId) },
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
     });
 
-    if (!user) {
+    if (!existingUser) {
       return res
         .status(404)
-        .send({ success: false, message: "User not found" })
-        .end();
+        .json({ success: false, message: "User not found" });
+    }
+
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (existingProfile) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Profile already exists" });
     }
 
     const profile = await prisma.profile.create({
       data: {
         name,
         about,
-        userId: Number(userId),
+        userId,
         avatarImage,
         socialMediaURL,
         backgroundImage,
@@ -37,14 +53,11 @@ export const createProfile = async (req: Request, res: Response) => {
       },
     });
 
-    return res.send({ success: true, profile }).end();
+    return res.status(201).json({ success: true, profile });
   } catch (error) {
-    return res
-      .status(500)
-      .send({
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      })
-      .end();
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 };

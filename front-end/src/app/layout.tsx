@@ -1,10 +1,10 @@
 "use client";
-import type { Metadata } from "next";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { useEffect, useState } from "react";
 import { AuthContext } from "./contexts/AuthContext";
-import { Dispatch, SetStateAction, useState } from "react";
-import { NavBar } from "@/components/navbar";
+import jwt from "jsonwebtoken";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,13 +21,40 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [user, setUser] = useState("mnkhbldd");
+  const [userId, setUserId] = useState<string>("");
+
+  const getTokenFromCookies = () => {
+    const cookies = document.cookie.split(";");
+    const tokenCookie = cookies.find((cookie) =>
+      cookie.trim().startsWith("token=")
+    );
+    if (tokenCookie) {
+      const token = tokenCookie.split("=")[1];
+      return token;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const token = getTokenFromCookies();
+    if (token) {
+      try {
+        const decoded = jwt.decode(token);
+        if (decoded && typeof decoded === "object" && "id" in decoded) {
+          setUserId((decoded as any).id);
+        }
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, []);
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ userId, setUserId }}>
           {children}
         </AuthContext.Provider>
       </body>

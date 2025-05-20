@@ -43,6 +43,7 @@ export const Signup = async (req: Request, res: Response) => {
       .cookie("token", token, {
         maxAge: 60 * 60 * 24 * 1000,
         secure: false, // if https true else false
+        httpOnly: true,
       })
       .send("User signed in")
       .end();

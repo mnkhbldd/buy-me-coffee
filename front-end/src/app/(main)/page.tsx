@@ -1,6 +1,5 @@
 "use client";
 import React, { useContext, useState } from "react";
-import { AuthContext } from "../contexts/AuthContext";
 import {
   ArrowDown,
   ChevronDown,
@@ -31,7 +30,6 @@ import {
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 
 export default function Home() {
-  const { user } = useContext(AuthContext);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [priceAmount, setPriceAmount] = useState([
     { label: "1$", value: 1, isChecked: false },

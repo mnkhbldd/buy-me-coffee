@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CameraIcon } from "lucide-react";
+import { CameraIcon, User } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { z } from "zod";
@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { uploadImage } from "@/app/utils/image-upload";
+import { axiosInstance } from "@/lib/utils";
+import { AuthContext } from "@/app/contexts/AuthContext";
 
 interface Types {
   handleNextPage: () => void;
@@ -54,6 +56,8 @@ const formSchema = z.object({
 });
 
 export const CreateProfile = ({ handleNextPage }: Types) => {
+  const { userId } = useContext(AuthContext);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,10 +83,22 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
       }
 
       console.log("Image URL:", imageUrl);
-      handleNextPage();
     } catch (error) {
       console.error("Error uploading image:", error);
     }
+
+    try {
+      const fetchProfile = await axiosInstance.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/profile`,
+        {
+          userId,
+          name: values.name,
+          about: values.about,
+          socialMediaURL: values.socialMediaURL,
+          avatarImage: values.avatarImage,
+        }
+      );
+    } catch (error) {}
 
     console.log(values);
   };
