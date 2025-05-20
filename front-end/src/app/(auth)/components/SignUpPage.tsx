@@ -84,7 +84,7 @@ export const SignUpPage = () => {
         );
 
         setError({});
-        router.push("/login");
+        router.push("/createprofile");
       } catch (err: any) {
         console.error("Sign up failed", err);
         setError({ email: "Something went wrong. Try again." });
