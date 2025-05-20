@@ -11,29 +11,54 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  password String
-  username String  @unique
-  profileId  Int 
-  profile Profile @relation(fields: [profileId], references: [id])
+  id                Int        @id @default(autoincrement())
+  email             String     @unique
+  password          String
+  username          String     @unique
+  donations         Donation[] @relation("Donor")
+  receivedDonations Donation[] @relation("Recipient")
+  createdAt         DateTime   @default(now())
+  profile           Profile?
+  bankCard          BankCard?
+  updatedAt         DateTime   @updatedAt
 }
 
 model Profile {
-  id               Int      @id @default(autoincrement())
-  name             String
-  about            String
-  avatarImage      String
-  socialMediaURL   String
-  backgroundImage  String 
-  successMessage   String
-  userId           Int      @unique
-  user             User     @relation(fields: [userId], references: [id])
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  name            String
+  about           String
+  avatarImage     String
+  socialMediaURL  String
+  backgroundImage String
+  successMessage  String
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
+model BankCard {
+  id         Int      @id @default(autoincrement())
+  country    String
+  firstName  String
+  lastName   String
+  cardNumber String
+  expiryDate DateTime
+  userId     Int      @unique
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
 
-
-
-
+model Donation {
+  id                      Int      @id @default(autoincrement())
+  amount                  Int
+  specialMessage          String
+  socialURLOrBuyMeACoffee String
+  donor                   User?    @relation("Donor", fields: [donorId], references: [id])
+  donorId                 Int
+  recipient               User     @relation("Recipient", fields: [recipientId], references: [id])
+  recipientId             Int
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
