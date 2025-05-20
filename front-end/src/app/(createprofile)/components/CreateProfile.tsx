@@ -27,13 +27,13 @@ const formSchema = z.object({
   name: z.string().min(2, {
     message: "Please enter name",
   }),
-  bio: z
+  about: z
     .string()
     .min(10, {
-      message: "Bio must be at least 10 characters.",
+      message: "about must be at least 10 characters.",
     })
     .max(160, {
-      message: "Bio must not be longer than 30 characters.",
+      message: "about must not be longer than 30 characters.",
     }),
   socialMediaURL: z.string().url({ message: "Please enter URL Link" }).min(10, {
     message: "Please enter link",
@@ -58,7 +58,7 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      bio: "",
+      about: "",
       socialMediaURL: "",
       avatarImage: "",
     },
@@ -83,6 +83,8 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
     } catch (error) {
       console.error("Error uploading image:", error);
     }
+
+    console.log(values);
   };
 
   return (
@@ -200,16 +202,13 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
         </Form>
         <div className="flex flex-col gap-2">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-2/3 space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="bio"
+                name="about"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio</FormLabel>
+                    <FormLabel>About</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Tell us a little bit about yourself"
@@ -227,10 +226,7 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
         </div>
         <div className="flex flex-col gap-2">
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-2/3 space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
               <FormField
                 control={form.control}
                 name="socialMediaURL"

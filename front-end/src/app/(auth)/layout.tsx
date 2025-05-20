@@ -1,19 +1,27 @@
+"use client";
+import { NavBar } from "@/components/navbar";
 import { Coffee } from "lucide";
 import { CoffeeIcon } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <div className="flex w-full h-full gap-[20px]">
+      <NavBar pathname={pathname} />
+
       <div className="bg-[#FBBF24] w-[50%] h-screen flex flex-col items-center justify-center relative">
-        <div className="flex gap-2 absolute top-[32px] left-[108px]">
+        {/* <div className="flex gap-2 absolute top-[32px] left-[108px]">
           <CoffeeIcon />
           <p className="text-[16px] font-bold">Buy Me Coffee</p>
-        </div>
+        </div> */}
+
         <div className="flex flex-col items-center justify-center gap-[40px]">
           <Image
             alt="icon"

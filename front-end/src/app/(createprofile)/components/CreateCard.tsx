@@ -85,6 +85,15 @@ export const CreateCard = () => {
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
+    defaultValues: {
+      country: "",
+      firstName: "",
+      lastName: "",
+      cardNumber: "",
+      month: "",
+      year: "",
+      cvc: "",
+    },
   });
 
   return (

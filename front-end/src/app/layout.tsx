@@ -28,7 +28,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthContext.Provider value={{ user, setUser }}>
-          {/* <NavBar /> */}
           {children}
         </AuthContext.Provider>
       </body>
