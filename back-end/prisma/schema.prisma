@@ -29,8 +29,8 @@ model Profile {
   about           String
   avatarImage     String
   socialMediaURL  String
-  backgroundImage String
-  successMessage  String
+  backgroundImage String?
+  successMessage  String?
   userId          Int      @unique
   user            User     @relation(fields: [userId], references: [id], onUpdate: Cascade)
   createdAt       DateTime @default(now())
@@ -44,6 +44,7 @@ model BankCard {
   lastName   String
   cardNumber String
   expiryDate DateTime
+  cvc        String
   userId     Int      @unique
   user       User     @relation(fields: [userId], references: [id])
   createdAt  DateTime @default(now())

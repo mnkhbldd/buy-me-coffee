@@ -43,7 +43,10 @@ export const LoginPageSection = () => {
     try {
       const res = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/sign-in`,
-        { email, password }
+        { email, password },
+        {
+          withCredentials: true,
+        }
       );
       setError({});
       router.push("/");

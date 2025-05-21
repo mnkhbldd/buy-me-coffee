@@ -27,6 +27,9 @@ export const checkUser = async (req: Request, res: Response) => {
 
 export const Signup = async (req: Request, res: Response) => {
   const { email, password, username } = req.body;
+  if (!email || !password || !username) {
+    return res.status(400).send("Missing required fields").end();
+  }
 
   const hashedPassword = bcypt.hashSync(password, 10);
   try {

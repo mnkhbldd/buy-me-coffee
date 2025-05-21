@@ -5,6 +5,7 @@ import "./globals.css";
 import { useEffect, useState } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import jwt from "jsonwebtoken";
+import { axiosInstance } from "@/lib/utils";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,32 +22,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [userId, setUserId] = useState<string>("");
-
-  const getTokenFromCookies = () => {
-    const cookies = document.cookie.split(";");
-    const tokenCookie = cookies.find((cookie) =>
-      cookie.trim().startsWith("token=")
-    );
-    if (tokenCookie) {
-      const token = tokenCookie.split("=")[1];
-      return token;
-    }
-    return null;
-  };
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    const token = getTokenFromCookies();
-    if (token) {
+    const fetchProfile = async () => {
       try {
-        const decoded = jwt.decode(token);
-        if (decoded && typeof decoded === "object" && "id" in decoded) {
-          setUserId((decoded as any).id);
-        }
+        const response = await axiosInstance.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/profile/current-user`,
+          { withCredentials: true }
+        );
+
+        setProfile(response.data.profile);
       } catch (error) {
-        console.error("Error decoding token:", error);
+        console.error("Failed to fetch user profile:", error);
       }
-    }
+    };
+
+    fetchProfile();
   }, []);
 
   return (
@@ -54,7 +46,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthContext.Provider value={{ userId, setUserId }}>
+        <AuthContext.Provider value={{ profile }}>
           {children}
         </AuthContext.Provider>
       </body>

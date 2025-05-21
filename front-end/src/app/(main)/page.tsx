@@ -28,8 +28,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function Home() {
+  const profile = useContext(AuthContext);
   const [selectedDateRange, setSelectedDateRange] = useState("");
   const [priceAmount, setPriceAmount] = useState([
     { label: "1$", value: 1, isChecked: false },
@@ -48,12 +50,16 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex gap-3">
               <Avatar className="size-[48px]">
-                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarImage src={profile?.profile?.avatarImage} />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
-                <p className="text-[16px] font-bold">Jake</p>
-                <p className="text-[14px]">buymecoffee.com/baconpancakes1</p>
+                <p className="text-[16px] font-bold">
+                  {profile?.profile?.name}
+                </p>
+                <p className="text-[14px]">
+                  {profile?.profile?.socialMediaURL}
+                </p>
               </div>
             </div>
             <Button>

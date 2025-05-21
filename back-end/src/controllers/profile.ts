@@ -1,8 +1,19 @@
 import { Request, Response } from "express";
 import { prisma } from "../utils/prisma";
 
-export const createProfile = async (req: Request, res: Response) => {
-  const user = (req as any).user;
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    username: string;
+  };
+}
+
+export const createProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const user = req.user;
 
   if (!user || !user.id) {
     return res
@@ -11,14 +22,7 @@ export const createProfile = async (req: Request, res: Response) => {
   }
 
   const userId = Number(user.id);
-  const {
-    avatarImage,
-    name,
-    about,
-    socialMediaURL,
-    backgroundImage,
-    successMessage,
-  } = req.body;
+  const { avatarImage, name, about, socialMediaURL } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -48,16 +52,42 @@ export const createProfile = async (req: Request, res: Response) => {
         userId,
         avatarImage,
         socialMediaURL,
-        backgroundImage,
-        successMessage,
       },
     });
 
     return res.status(201).json({ success: true, profile });
   } catch (error) {
-    return res.status(500).json({
+    console.log(error);
+    return res.status(502).json({
       success: false,
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+};
+
+export const getSignedProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const profile = await prisma.profile.findUnique({
+      where: { userId: req.user.id },
+      include: { user: true },
+    });
+
+    if (!profile) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Profile not found" });
+    }
+
+    return res.json({ success: true, profile });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };

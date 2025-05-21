@@ -1,11 +1,9 @@
 import React, { Dispatch, SetStateAction } from "react";
 
 interface AuthContextValue {
-  userId: string;
-  setUserId: (newUserId: string) => void;
+  profile: any;
 }
 
 export const AuthContext = React.createContext<AuthContextValue>({
-  userId: "",
-  setUserId: () => {},
+  profile: null,
 });

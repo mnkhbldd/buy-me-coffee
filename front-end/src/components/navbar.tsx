@@ -21,13 +21,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useContext } from "react";
+import { AuthContext } from "@/app/contexts/AuthContext";
 
-interface NavBarProps {
+type NavBarProps = {
   pathname: string;
   className: string;
-}
+};
 
 export const NavBar = ({ pathname, className }: NavBarProps) => {
+  const profile = useContext(AuthContext);
   const router = useRouter();
   return (
     <div
@@ -50,40 +53,19 @@ export const NavBar = ({ pathname, className }: NavBarProps) => {
           {pathname === "/login" ? "Signup" : "Login"}
         </Button>
       ) : (
-        // <div className="flex items-center">
-        //   <Avatar>
-        //     <AvatarImage src="https://github.com/shadcn.png" />
-        //     <AvatarFallback>CN</AvatarFallback>
-        //   </Avatar>
-
-        //   <Select>
-        //     <SelectTrigger className="w-[180px] border-none shadow-none">
-        //       <SelectValue
-        //         className="placeholder:text-black"
-        //         placeholder="Jake"
-        //       />
-        //     </SelectTrigger>
-        //     <SelectContent>
-        //       <SelectGroup>
-        //         <SelectItem value="Logout">Logout</SelectItem>
-        //       </SelectGroup>
-        //     </SelectContent>
-        //   </Select>
-        //   </div>
-
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarImage src={profile?.profile?.avatarImage} />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
 
           <DropdownMenu>
             <DropdownMenuTrigger>
               <div className="flex items-center">
-                <p className="w-[83px] text-start font-normal text-[14px]">
-                  Jake
+                <p className="w-[83px] text-start font-medium text-[14px]">
+                  {profile?.profile?.name}
                 </p>
-                <ChevronDown />
+                <ChevronDown className="size-[16px]" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

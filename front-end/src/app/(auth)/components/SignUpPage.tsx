@@ -34,7 +34,7 @@ export const SignUpPage = () => {
       }
 
       try {
-        const res = await axiosInstance.post(
+        await axiosInstance.post(
           `${process.env.NEXT_PUBLIC_API_URL}/auth/checkUser`,
           { username: usernameValue }
         );
@@ -88,7 +88,7 @@ export const SignUpPage = () => {
         router.push("/createprofile");
       } catch (err: any) {
         console.error("Sign up failed", err);
-        setError({ email: "Something went wrong. Try again." });
+        setError({ email: "Email already exist." });
       }
     }
   };

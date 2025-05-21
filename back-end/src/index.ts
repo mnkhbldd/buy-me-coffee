@@ -5,13 +5,14 @@ import { userRouter } from "./routers/users";
 import { authRouter } from "./routers/auth";
 import cookieParser from "cookie-parser";
 import { profileRouter } from "./routers/profile";
+import { bankCardRouter } from "./routers/bankcard";
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(cors());
+app.use(json());
 app.use(
   cors({
     origin: "http://localhost:3000", // your frontend origin
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use("/user", userRouter);
 app.use("/auth", authRouter);
 app.use("/profile", profileRouter);
+app.use("/bankcard", bankCardRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

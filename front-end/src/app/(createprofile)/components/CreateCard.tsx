@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { axiosInstance } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const FormSchema = z.object({
   country: z.string().min(1, {
@@ -38,18 +40,11 @@ const FormSchema = z.object({
   lastName: z.string().min(2, {
     message: "Please enter the lastname",
   }),
-  cardNumber: z
-    .string()
-    .min(16, {
-      message: "Please enter the card number",
-    })
-    .max(16, {
-      message: "Its not card number",
-    }),
-  month: z.string().min(0, {
+  cardNumber: z.string().refine((value) => isValidCreditCardNumber(value), {}),
+  month: z.string().min(1, {
     message: "Please select month",
   }),
-  year: z.string().min(0, {
+  year: z.string().min(1, {
     message: "Please select year",
   }),
   cvc: z
@@ -62,12 +57,29 @@ const FormSchema = z.object({
     }),
 });
 
-function onSubmit(values: z.infer<typeof FormSchema>) {
-  const expiryDate = `${values.month}/${values.year}`;
-  console.log(values);
+function isValidCreditCardNumber(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/\D/g, "");
+
+  let sum = 0;
+  let shouldDouble = false;
+
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits.charAt(i), 10);
+
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+
+  return sum % 10 === 0;
 }
 
 export const CreateCard = () => {
+  const router = useRouter();
   const [countryNames, setCountryNames] = useState();
 
   const fetchCountryNames = async () => {
@@ -95,6 +107,36 @@ export const CreateCard = () => {
       cvc: "",
     },
   });
+
+  const onSubmit = async (values: z.infer<typeof FormSchema>) => {
+    const [month, year] = [values.month, values.year];
+    const expiryDate = new Date(Number(year), Number(month) - 1, 1);
+
+    try {
+      const request = await axiosInstance.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/bankcard`,
+        {
+          country: values.country,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          cardNumber: values.cardNumber,
+          expiryDate: expiryDate,
+          cvc: values.cvc,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (!request) {
+        console.error("Error in onSubmit:", request);
+      } else {
+        router.push("/");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="flex  flex-col gap-6 w-[510px]">
@@ -267,17 +309,18 @@ export const CreateCard = () => {
                       <Select onValueChange={field.onChange}>
                         <FormControl className="w-full">
                           <SelectTrigger>
-                            <SelectValue placeholder="month" />
+                            <SelectValue placeholder="Year" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                            (month, index) => (
-                              <SelectItem key={index} value={month.toString()}>
-                                {month}
-                              </SelectItem>
-                            )
-                          )}
+                          {Array.from(
+                            { length: 11 },
+                            (_, i) => new Date().getFullYear() + i
+                          ).map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
 

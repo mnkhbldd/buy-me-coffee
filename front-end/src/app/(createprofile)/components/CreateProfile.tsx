@@ -1,14 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CameraIcon, User } from "lucide-react";
+import { CameraIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,10 +15,9 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { uploadImage } from "@/app/utils/image-upload";
 import { axiosInstance } from "@/lib/utils";
-import { AuthContext } from "@/app/contexts/AuthContext";
 
 interface Types {
   handleNextPage: () => void;
@@ -56,8 +54,6 @@ const formSchema = z.object({
 });
 
 export const CreateProfile = ({ handleNextPage }: Types) => {
-  const { userId } = useContext(AuthContext);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,49 +64,44 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
     },
   });
   const [file, setFile] = useState<File>();
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!file) {
-      console.error("No image was uploaded");
-      return;
-    }
-
     try {
-      const imageUrl = await uploadImage(file);
-      if (!imageUrl) {
-        console.error("No image URL was returned");
+      if (!file) {
+        console.error("No image was uploaded");
         return;
       }
 
-      console.log("Image URL:", imageUrl);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-    }
+      const imageUrl = await uploadImage(file);
 
-    try {
-      const fetchProfile = await axiosInstance.post(
+      if (!imageUrl) {
+        console.error("Failed to upload image.");
+        return;
+      }
+
+      const response = await axiosInstance.post(
         `${process.env.NEXT_PUBLIC_API_URL}/profile`,
         {
-          userId,
           name: values.name,
           about: values.about,
           socialMediaURL: values.socialMediaURL,
-          avatarImage: values.avatarImage,
-        }
+          avatarImage: imageUrl,
+        },
+        { withCredentials: true }
       );
-    } catch (error) {}
 
-    console.log(values);
+      if (response) {
+        handleNextPage();
+      } else console.error("Error in onSubmit:", response);
+
+      console.log(values);
+    } catch (error) {
+      console.error("Error in onSubmit:", error);
+    }
   };
-
   return (
     <div className="flex  flex-col gap-6 w-[510px]">
       <p className="text-[24px] font-semibold">Complete your profile</p>
       <div className="flex flex-col gap-3">
-        {/* <p className="text-[14px] font-medium">Add photo</p>
-        <div className="w-[160px] h-[160px] rounded-full border-dashed border flex items-center justify-center">
-          <CameraIcon className="text-gray-400" />
-        </div> */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
