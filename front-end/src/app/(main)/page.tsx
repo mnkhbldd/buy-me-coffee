@@ -50,15 +50,23 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex gap-3">
               <Avatar className="size-[48px]">
-                <AvatarImage src={profile?.profile?.avatarImage} />
+                <AvatarImage
+                  src={
+                    profile?.profile?.avatarImage
+                      ? profile?.profile?.avatarImage
+                      : "https://github.com/shadcn.png"
+                  }
+                />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
               <div className="flex flex-col gap-1">
                 <p className="text-[16px] font-bold">
-                  {profile?.profile?.name}
+                  {profile?.profile?.name ? profile?.profile?.name : "Unkown"}
                 </p>
                 <p className="text-[14px]">
-                  {profile?.profile?.socialMediaURL}
+                  {profile?.profile?.socialMediaURL
+                    ? profile?.profile?.socialMediaURL
+                    : "User didnt log in"}
                 </p>
               </div>
             </div>

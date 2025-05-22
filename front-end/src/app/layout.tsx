@@ -24,6 +24,11 @@ export default function RootLayout({
 }>) {
   const [profile, setProfile] = useState<any>(null);
 
+  const handleLogOut = () => {
+    setProfile("");
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -31,7 +36,7 @@ export default function RootLayout({
           `${process.env.NEXT_PUBLIC_API_URL}/profile/current-user`,
           { withCredentials: true }
         );
-
+        console.log("User profile:", response.data);
         setProfile(response.data.profile);
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
@@ -46,7 +51,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthContext.Provider value={{ profile }}>
+        <AuthContext.Provider value={{ profile, handleLogOut }}>
           {children}
         </AuthContext.Provider>
       </body>

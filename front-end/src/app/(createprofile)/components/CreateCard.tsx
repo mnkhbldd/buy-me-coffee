@@ -30,6 +30,11 @@ import axios from "axios";
 import { axiosInstance } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
+type Promps = {
+  className: string;
+  isSettings: boolean;
+};
+
 const FormSchema = z.object({
   country: z.string().min(1, {
     message: "Please select an country.",
@@ -78,7 +83,7 @@ function isValidCreditCardNumber(cardNumber: string): boolean {
   return sum % 10 === 0;
 }
 
-export const CreateCard = () => {
+export const CreateCard = ({ className, isSettings }: Promps) => {
   const router = useRouter();
   const [countryNames, setCountryNames] = useState();
 
@@ -139,7 +144,7 @@ export const CreateCard = () => {
   };
 
   return (
-    <div className="flex  flex-col gap-6 w-[510px]">
+    <div className={`flex  flex-col gap-6 w-[510px] ` + className}>
       <div className="flex flex-col gap-[6px]">
         <p className="text-[24px] font-semibold">
           How would you like to bo paid?
@@ -351,9 +356,15 @@ export const CreateCard = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-[246px] self-end">
-                  Continue
-                </Button>
+                {isSettings ? (
+                  <Button type="submit" className="w-full">
+                    Save changes
+                  </Button>
+                ) : (
+                  <Button type="submit" className="w-[246px] self-end">
+                    Continue
+                  </Button>
+                )}
               </form>
             </Form>
           </div>

@@ -30,7 +30,7 @@ type NavBarProps = {
 };
 
 export const NavBar = ({ pathname, className }: NavBarProps) => {
-  const profile = useContext(AuthContext);
+  const { profile, handleLogOut } = useContext(AuthContext);
   const router = useRouter();
   return (
     <div
@@ -55,7 +55,13 @@ export const NavBar = ({ pathname, className }: NavBarProps) => {
       ) : (
         <div className="flex items-center gap-2">
           <Avatar>
-            <AvatarImage src={profile?.profile?.avatarImage} />
+            <AvatarImage
+              src={
+                profile?.avatarImage
+                  ? profile?.avatarImage
+                  : "https://github.com/shadcn.png"
+              }
+            />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
 
@@ -63,13 +69,21 @@ export const NavBar = ({ pathname, className }: NavBarProps) => {
             <DropdownMenuTrigger>
               <div className="flex items-center">
                 <p className="w-[83px] text-start font-medium text-[14px]">
-                  {profile?.profile?.name}
+                  {profile?.name ? profile?.name : "Unkown"}
                 </p>
                 <ChevronDown className="size-[16px]" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              {profile?.name ? (
+                <DropdownMenuItem onClick={handleLogOut}>
+                  Log out
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => router.push("/login")}>
+                  Log in
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -21,6 +21,8 @@ import { axiosInstance } from "@/lib/utils";
 
 interface Types {
   handleNextPage: () => void;
+  className: string;
+  isSettings: boolean;
 }
 
 const formSchema = z.object({
@@ -53,7 +55,11 @@ const formSchema = z.object({
     ),
 });
 
-export const CreateProfile = ({ handleNextPage }: Types) => {
+export const CreateProfile = ({
+  handleNextPage,
+  className,
+  isSettings,
+}: Types) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,7 +105,7 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
     }
   };
   return (
-    <div className="flex  flex-col gap-6 w-[510px]">
+    <div className={`flex  flex-col gap-6 w-[510px] ` + className}>
       <p className="text-[24px] font-semibold">Complete your profile</p>
       <div className="flex flex-col gap-3">
         <Form {...form}>
@@ -247,9 +253,15 @@ export const CreateProfile = ({ handleNextPage }: Types) => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-[246px] self-end">
-                Continue
-              </Button>
+              {isSettings === true ? (
+                <Button type="submit" className="w-full self-end">
+                  Save changes
+                </Button>
+              ) : (
+                <Button type="submit" className="w-[246px] self-end">
+                  Continue
+                </Button>
+              )}
             </form>
           </Form>
         </div>
