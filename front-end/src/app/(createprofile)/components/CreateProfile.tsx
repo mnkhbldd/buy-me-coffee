@@ -15,9 +15,10 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { uploadImage } from "@/app/utils/image-upload";
 import { axiosInstance } from "@/lib/utils";
+import { AuthContext } from "@/app/contexts/AuthContext";
 
 interface Types {
   handleNextPage: () => void;
@@ -60,6 +61,11 @@ export const CreateProfile = ({
   className,
   isSettings,
 }: Types) => {
+  const { profile } = useContext(AuthContext);
+
+  const [defaultAvatarImage, setDefaultAvatarImage] = useState<string>(
+    profile?.avatarImage || ""
+  );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,38 +76,75 @@ export const CreateProfile = ({
     },
   });
   const [file, setFile] = useState<File>();
+  useEffect(() => {
+    if (isSettings && profile) {
+      form.reset({
+        name: profile.name || "",
+        about: profile.about || "",
+        socialMediaURL: profile.socialMediaURL || "",
+        avatarImage: profile.avatarImage || "",
+      });
+    }
+  }, [profile, isSettings, form]);
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      if (!file) {
-        console.error("No image was uploaded");
-        return;
-      }
+    let imageUrl = "";
 
-      const imageUrl = await uploadImage(file);
-
+    // Only upload if a new file is selected
+    if (file) {
+      imageUrl = await uploadImage(file);
       if (!imageUrl) {
         console.error("Failed to upload image.");
         return;
       }
+    } else {
+      // Use existing avatar image if no new image was uploaded
+      if (isSettings && defaultAvatarImage) {
+        imageUrl = defaultAvatarImage;
+      } else {
+        console.error("No image was uploaded and no default image is set.");
+        return;
+      }
+    }
+    if (isSettings == true) {
+      try {
+        const sumbitData = await axiosInstance.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/profile/update-profile`,
+          {
+            name: values.name,
+            about: values.about,
+            socialMediaURL: values.socialMediaURL,
+            avatarImage: imageUrl,
+          },
+          { withCredentials: true }
+        );
 
-      const response = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/profile`,
-        {
-          name: values.name,
-          about: values.about,
-          socialMediaURL: values.socialMediaURL,
-          avatarImage: imageUrl,
-        },
-        { withCredentials: true }
-      );
+        if (sumbitData) {
+          console.log(sumbitData, "data updated");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      try {
+        const response = await axiosInstance.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/profile`,
+          {
+            name: values.name,
+            about: values.about,
+            socialMediaURL: values.socialMediaURL,
+            avatarImage: imageUrl,
+          },
+          { withCredentials: true }
+        );
 
-      if (response) {
-        handleNextPage();
-      } else console.error("Error in onSubmit:", response);
+        if (response) {
+          handleNextPage();
+        } else console.error("Error in onSubmit:", response);
 
-      console.log(values);
-    } catch (error) {
-      console.error("Error in onSubmit:", error);
+        console.log(values);
+      } catch (error) {
+        console.error("Error in onSubmit:", error);
+      }
     }
   };
   return (
@@ -145,7 +188,7 @@ export const CreateProfile = ({
                         </Button>
                       </div>
                     ) : (
-                      <div className="relative w-full h-full">
+                      <div className="rounded-full relative w-fit h-fit ">
                         <Input
                           type="file"
                           accept="image/*"
@@ -183,7 +226,9 @@ export const CreateProfile = ({
                             }
                           }}
                         />
-                        <CameraIcon className="text-gray-400 absolute left-1/5 top-[45%]" />
+                        <CameraIcon
+                          className={`text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 size-[24px] `}
+                        />
                       </div>
                     )}
                   </FormControl>

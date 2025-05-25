@@ -19,14 +19,24 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { axiosInstance } from "@/lib/utils";
 
-const formSchema = z.object({
-  password: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  confirmpassword: z.string(),
-  successMessage: z.string(),
-});
+const formSchema = z
+  .object({
+    password: z.string().min(2, {
+      message: "Password is weak",
+    }),
+    confirmpassword: z.string().min(2, {
+      message: "Confirm Password is required",
+    }),
+    successMessage: z.string().min(2, {
+      message: "Add more description",
+    }),
+  })
+  .refine((data) => data.password === data.confirmpassword, {
+    path: ["confirmpassword"],
+    message: "Passwords do not match",
+  });
 
 export default function AccountSettings() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -38,14 +48,27 @@ export default function AccountSettings() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const updatePassword = await axiosInstance.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/user/update-password`,
+        {
+          password: values.password,
+        }
+      );
+
+      console.log(updatePassword, "password updated");
+    } catch (error) {
+      console.error(error, "update password");
+    }
     console.log(values);
   };
   return (
-    <div className="flex flex-col gap-8 w-1/2 items-center">
+    <div className="flex flex-col gap-8 w-1/2 ">
+      <p className="text-[24px] font-semibold">My account</p>
       <CreateProfile
         handleNextPage={() => {}}
-        className="!w-full"
+        className="!w-full border p-6"
         isSettings={true}
       />
       <div className="p-6 border rounded-[8px] flex flex-col gap-6 w-full">
@@ -69,7 +92,10 @@ export default function AccountSettings() {
           </form>
         </Form>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="!w-full">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="!w-full flex flex-col gap-6"
+          >
             <FormField
               control={form.control}
               name="confirmpassword"
@@ -84,10 +110,13 @@ export default function AccountSettings() {
                 </FormItem>
               )}
             />
+            <Button type="submit" className="w-full">
+              Save changes
+            </Button>
           </form>
         </Form>
       </div>
-      <CreateCard className="w-full" isSettings={true} />
+      <CreateCard className="w-full border p-6" isSettings={true} />
       <div className="p-6 border rounded-[8px] flex flex-col gap-6 w-full">
         <p className="text-[16px] font-bold">Success page</p>
         <Form {...form}>

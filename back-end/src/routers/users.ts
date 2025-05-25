@@ -1,6 +1,6 @@
 import Router from "express";
-import { createUser } from "../controllers/users";
+import { createUser, updatePassword } from "../controllers/users";
 
 export const userRouter = Router();
 
-userRouter.post("/", createUser);
+userRouter.post("/", createUser).put("/update-password", updatePassword);

@@ -25,10 +25,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { axiosInstance } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { AuthContext } from "@/app/contexts/AuthContext";
+import { isSet } from "util/types";
 
 type Promps = {
   className: string;
@@ -84,6 +86,7 @@ function isValidCreditCardNumber(cardNumber: string): boolean {
 }
 
 export const CreateCard = ({ className, isSettings }: Promps) => {
+  const { bankCard } = useContext(AuthContext);
   const router = useRouter();
   const [countryNames, setCountryNames] = useState();
 
@@ -117,31 +120,76 @@ export const CreateCard = ({ className, isSettings }: Promps) => {
     const [month, year] = [values.month, values.year];
     const expiryDate = new Date(Number(year), Number(month) - 1, 1);
 
-    try {
-      const request = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/bankcard`,
-        {
-          country: values.country,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          cardNumber: values.cardNumber,
-          expiryDate: expiryDate,
-          cvc: values.cvc,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+    if (isSettings == true) {
+      try {
+        const updateCardInfo = await axiosInstance.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/bankcard/update-bankcard`,
+          {
+            country: values.country,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            cardNumber: values.cardNumber,
+            expiryDate: expiryDate,
+            cvc: values.cvc,
+          },
+          {
+            withCredentials: true,
+          }
+        );
 
-      if (!request) {
-        console.error("Error in onSubmit:", request);
-      } else {
-        router.push("/");
+        console.log(updateCardInfo, "card updated");
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.log(error);
+    } else {
+      try {
+        const request = await axiosInstance.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/bankcard`,
+          {
+            country: values.country,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            cardNumber: values.cardNumber,
+            expiryDate: expiryDate,
+            cvc: values.cvc,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (!request) {
+          console.error("Error in onSubmit:", request);
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
+
+  useEffect(() => {
+    if (isSettings && bankCard) {
+      const date = new Date(bankCard.expiryDate);
+      const month = String(date.getMonth() + 1);
+      const year = String(date.getFullYear());
+
+      form.reset({
+        country: bankCard.country || "",
+        firstName: bankCard.firstName || "",
+        lastName: bankCard.lastName || "",
+        cardNumber: bankCard.cardNumber || "",
+        cvc: bankCard.cvc || "",
+        month,
+        year,
+      });
+
+      form.setValue("country", bankCard.country);
+      form.setValue("month", month);
+      form.setValue("year", year);
+    }
+  }, [bankCard, isSettings, form]);
 
   return (
     <div className={`flex  flex-col gap-6 w-[510px] ` + className}>
@@ -167,7 +215,7 @@ export const CreateCard = ({ className, isSettings }: Promps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Select country</FormLabel>
-                    <Select onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl className="w-full">
                         <SelectTrigger>
                           <SelectValue placeholder="Select country" />
@@ -275,7 +323,10 @@ export const CreateCard = ({ className, isSettings }: Promps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Month</FormLabel>
-                      <Select onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl className="w-full">
                           <SelectTrigger>
                             <SelectValue placeholder="month" />
@@ -311,7 +362,10 @@ export const CreateCard = ({ className, isSettings }: Promps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Year</FormLabel>
-                      <Select onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl className="w-full">
                           <SelectTrigger>
                             <SelectValue placeholder="Year" />

@@ -23,6 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [profile, setProfile] = useState<any>(null);
+  const [bankCard, setBankCard] = useState<any>(null);
 
   const handleLogOut = () => {
     setProfile("");
@@ -36,14 +37,29 @@ export default function RootLayout({
           `${process.env.NEXT_PUBLIC_API_URL}/profile/current-user`,
           { withCredentials: true }
         );
-        console.log("User profile:", response.data);
+        // console.log("User profile:", response.data);
         setProfile(response.data.profile);
       } catch (error) {
-        console.error("Failed to fetch user profile:", error);
+        // console.error("Failed to fetch user profile:", error);
       }
     };
 
     fetchProfile();
+
+    const fetchBankCard = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/bankcard/current-bankcard`,
+          { withCredentials: true }
+        );
+        // console.log("aa :", response.data);
+        setBankCard(response.data.bankCard);
+      } catch (error) {
+        // console.error("Failed to fetch user profile:", error);
+      }
+    };
+
+    fetchBankCard();
   }, []);
 
   return (
@@ -51,7 +67,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthContext.Provider value={{ profile, handleLogOut }}>
+        <AuthContext.Provider value={{ profile, handleLogOut, bankCard }}>
           {children}
         </AuthContext.Provider>
       </body>

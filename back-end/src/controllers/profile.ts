@@ -91,3 +91,34 @@ export const getSignedProfile = async (
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const UpdateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const { name, about, socialMediaURL, avatarImage } = req.body;
+
+  try {
+    if (!req.user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user token" });
+    }
+    const profile = await prisma.profile.update({
+      where: { userId: req.user.id },
+      data: {
+        name,
+        about,
+        socialMediaURL,
+        avatarImage,
+      },
+    });
+
+    return res.json({ success: true, profile });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Cannot update profile" });
+  }
+};

@@ -32,6 +32,7 @@ export const authenticate = (
   try {
     const decoded = jwt.verify(token, secret_key) as DecodedUser;
     (req as any).user = decoded;
+    console.log(decoded, "decoded token");
     next();
   } catch (err) {
     console.log("JWT verify error:", err);
